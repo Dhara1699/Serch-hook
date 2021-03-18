@@ -1,10 +1,17 @@
 <template>
   <base-container>
     <h2>Active Users</h2>
-    <base-search @search="updateSearch" :search-term="enteredSearchTerm"></base-search>
+    <base-search
+      @search="updateSearch"
+      :search-term="enteredSearchTerm"
+    ></base-search>
     <div>
-      <button @click="sort('asc')" :class="{selected: sorting === 'asc'}">Sort Ascending</button>
-      <button @click="sort('desc')" :class="{selected: sorting === 'desc'}">Sort Descending</button>
+      <button @click="sort('asc')" :class="{ selected: sorting === 'asc' }">
+        Sort Ascending
+      </button>
+      <button @click="sort('desc')" :class="{ selected: sorting === 'desc' }">
+        Sort Descending
+      </button>
     </div>
     <ul>
       <user-item
@@ -19,9 +26,11 @@
 </template>
 
 <script>
-import { ref, computed, watch } from 'vue';
+import { toRefs } from 'vue';
 
 import UserItem from './UserItem.vue';
+import useSearch from '../../hooks/Search.js';
+import useSort from '../../hooks/Sort.js';
 
 export default {
   components: {
@@ -30,7 +39,7 @@ export default {
   props: ['users'],
   emits: ['list-projects'],
   setup(props) {
-    const enteredSearchTerm = ref('');
+    /* const enteredSearchTerm = ref('');
     const activeSearchTerm = ref('');
 
     const availableUsers = computed(function () {
@@ -55,36 +64,26 @@ export default {
 
     function updateSearch(val) {
       enteredSearchTerm.value = val;
-    }
+    } */
 
-    const sorting = ref(null);
-    const displayedUsers = computed(function () {
-      if (!sorting.value) {
-        return availableUsers.value;
-      }
-      return availableUsers.value.slice().sort((u1, u2) => {
-        if (sorting.value === 'asc' && u1.fullName > u2.fullName) {
-          return 1;
-        } else if (sorting.value === 'asc') {
-          return -1;
-        } else if (sorting.value === 'desc' && u1.fullName > u2.fullName) {
-          return -1;
-        } else {
-          return 1;
-        }
-      });
-    });
+    const { users } = toRefs(props);
 
-    function sort(mode) {
-      sorting.value = mode;
-    }
+    const { enteredSearchTerm, availableItems, updateSearch } = useSearch(
+      users,
+      'fullName'
+    );
+
+    const { sorting, displayedUsers, sort } = useSort(
+      availableItems,
+      'fullName'
+    );
 
     return {
       enteredSearchTerm,
       updateSearch,
-      displayedUsers,
       sorting,
-      sort
+      displayedUsers,
+      sort,
     };
   },
   // data() {
